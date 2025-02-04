@@ -1,23 +1,47 @@
-﻿namespace BreakTimePro;
+﻿using System;
+using Microsoft.Maui.Controls;
 
-public partial class MainPage : ContentPage
+namespace BreakTimePro
 {
-    int count = 0;
-
-    public MainPage()
+    public partial class MainPage : ContentPage
     {
-        InitializeComponent();
-    }
+        private int _remainingTime = 0;
+        private bool _isTimerRunning = false;
 
-    private void OnCounterClicked(object sender, EventArgs e)
-    {
-        count++;
+        public MainPage()
+        {
+            InitializeComponent();
+            Title = "Break Time";
+        }
 
-        if (count == 1)
-            CounterBtn.Text = $"Clicked {count} time";
-        else
-            CounterBtn.Text = $"Clicked {count} times";
+        private void OnBreakButtonClicked(object sender, EventArgs e)
+        {
+            var button = (Button)sender;
+            var breakTime = int.Parse(button.Text.Replace("Take ", ""));
 
-        SemanticScreenReader.Announce(CounterBtn.Text);
+            _remainingTime = breakTime * 60; 
+            _isTimerRunning = true;
+
+            Dispatcher.StartTimer(TimeSpan.FromSeconds(1), OnTimerTick);
+        }
+
+        private bool OnTimerTick()
+        {
+            if (_remainingTime > 0)
+            {
+                lblDisplay.Text = TimeSpan.FromSeconds(_remainingTime).ToString(@"mm\:ss");
+                _remainingTime--;
+            }
+            else
+            {
+                _isTimerRunning = false;
+                lblDisplay.Text = "Time is UP!!";
+                ftmMain.Background = Colors.Red;
+
+                return false;
+            }
+
+            return true;
+        }
     }
 }
